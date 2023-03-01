@@ -38,9 +38,22 @@ module Make(F: Fresh): S = struct
     in
     go t
 
-  let unify t t' =
+  let rec unify t t' =
     if t == t' then () else
       match t, t' with
+      | Var ({ contents = Unbound _ } as tv), t'
+        | t', Var ({ contents = Unbound _ } as tv) ->
+         tv := Link t'
+      | Var { contents = Link t }, t'
+        | t', Var { contents = Link t } ->
+         unify t t'
+      | Prod ts, Prod ts' ->
+         List.iter2 unify ts ts'
+      | Ctor (ts, c), Ctor (ts', c') when c = c' ->
+         List.iter2 unify ts ts'
+      | Arrow (l, r), Arrow (l', r') ->
+         unify l l';
+         unify r r'
       | _ -> ()
 
   let infer (ctx : ctx) =
