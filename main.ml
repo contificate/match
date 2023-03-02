@@ -9,8 +9,16 @@ module Infer =
         fun () -> incr c; !c
     end)
 
-let p : Pat.Untyped.t =
-  Cons ("Cons", Some (Tuple [Any; Cons ("Nil", None)]))
+let ps : Pat.Untyped.t list =
+  let nil : Pat.Untyped.t =
+    Cons ("Nil", None)
+  in
+  let cons x xs : Pat.Untyped.t =
+    Cons ("Cons", Some (Tuple [x; xs]))
+  in
+  [Tuple [nil; Any];
+   Tuple [Any; nil];
+   Tuple [cons (Var "x") (Var "xs"); cons (Var "y") (Var "ys")]]
 
 let () =
   let module T = Type in
@@ -18,11 +26,14 @@ let () =
   let add = Hashtbl.add ctors in
   let q0 = T.QVar 0 in
   let q0l = T.Ctor ([q0], "list") in
-  add "Nil" q0;
+  let q0o = T.Ctor ([q0], "option") in
+  add "Nil" q0l;
   add "Cons" (T.Arrow (Prod [q0; q0l], q0l));
+  add "None" q0o;
+  add "Some" (T.Arrow (q0, q0o));
   let ctx : Infer.ctx =
     { ctors }
   in
-  let p' = Infer.infer ctx p in
-  print_endline (T.show p'.ty)
+  let ty, ps' = Infer.infer_pats ctx ps in
+  print_endline (T.show ty)
 

@@ -9,6 +9,7 @@ module type S = sig
     }
 
   val infer : ctx -> Pat.Untyped.t -> Pat.Typed.t
+  val infer_pats : ctx -> Pat.Untyped.t list -> Type.t * Pat.Typed.t list
 end
 
 module Make(F: Fresh): S

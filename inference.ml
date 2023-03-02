@@ -9,6 +9,7 @@ module type S = sig
     }
 
   val infer : ctx -> Pat.Untyped.t -> Pat.Typed.t
+  val infer_pats : ctx -> Pat.Untyped.t list -> Type.t * Pat.Typed.t list
 end
 
 module Make(F: Fresh): S = struct
@@ -79,6 +80,11 @@ module Make(F: Fresh): S = struct
          in
          { v = Cons (c, po_ty); ty }
     in go
-  
+
+  let infer_pats (ctx : ctx) (ps : Pat.Untyped.t list) =
+    let p_ty = fresh_tv () in
+    let ps' = List.map (fun p -> let p' = infer ctx p in unify p_ty p'.ty; p') ps in
+    p_ty, ps'
+
 end
 
