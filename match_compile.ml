@@ -13,8 +13,8 @@ module OT = Hashtbl.Make(Occ)
 module V = Vector
 
 (* top-level only *)
-let zonk : Pat.Typed.t -> Pat.Typed.t = function
-  | { v; ty } -> { v; ty = Type.compress ty }
+let zonk : Pat.Typed.t -> Pat.Typed.t = fun p ->
+  { p with ty = Type.compress p.ty }
 
 (* preprocess list of patterns at a given occurrence into a pattern matrix *)
 let preprocess (base : Occ.t) (ps : Pat.Typed.t list) res : M.t =
@@ -190,7 +190,6 @@ let compile arities base ps =
         in
         Switch (occ, cases, default)
       end
-    
   in
   go initial |> show_dt |> print_endline
   
