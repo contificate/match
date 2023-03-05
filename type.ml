@@ -35,7 +35,7 @@ let rec show =
     | Var { contents = Unbound i } ->
        sprintf "'t%d" i
     | Ctor ([], c) -> c
-    | Ctor ([t], c) -> sprintf "%s %s" (show t) c
+    | Ctor ([t], c) -> sprintf "(%s) %s" (show t) c
     | Ctor (ts, c) ->
        let ts = String.concat ", " List.(map show ts) in
        sprintf "(%s) %s" ts c

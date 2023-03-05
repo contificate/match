@@ -1,2 +1,3 @@
 (executable
-  (name main))
+  (name main)
+  (libraries vector hashset))
