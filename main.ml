@@ -9,26 +9,38 @@ module Infer =
     end)
 
 let ps : Pat.Untyped.t list =
-  let _nil : Pat.Untyped.t =
+  let nil : Pat.Untyped.t =
     Cons ("Nil", None)
   in
-  let _cons x xs : Pat.Untyped.t =
+  let cons x xs : Pat.Untyped.t =
     Cons ("Cons", Some (Tuple [x; xs]))
   in
-  let _some x : Pat.Untyped.t =
+  let some x : Pat.Untyped.t =
     Cons ("Some", Some x) 
   in
   let a : Pat.Untyped.t = Cons ("A", None) in
   let b : Pat.Untyped.t = Cons ("B", None) in
   let c : Pat.Untyped.t = Cons ("C", None) in
-  [Tuple [a; b; c]; Tuple [b;a;c]; Tuple [b; Any; b]]
-  (* [Tuple [nil; Any];
-   *  Tuple [Any; nil];
-   *  Tuple [cons (Var "x") (Var "xs"); cons (Var "y") (Var "ys")]] *)
-  (* [some @@ Tuple [nil; Any];
-   *  some @@ Tuple [Any; nil];
-   *  some @@ Tuple [cons (Var "x") (Var "xs"); cons (Var "y") (Var "ys")];
-   *  Cons ("None", None)] *)
+  let re : Pat.Untyped.t = Cons ("Red", None) in
+  let bl : Pat.Untyped.t = Cons ("Black", None) in
+  let t c l x r : Pat.Untyped.t =
+    Cons ("T", Some(Tuple [c;l;x;r]))
+  in
+  (* [
+   *   Tuple [bl; t re (t re Any Any Any) Any Any; Any; Any];
+   *   Tuple [bl; t re Any Any (t re Any Any Any); Any; Any];
+   *   Tuple [bl; Any; Any; t re (t re Any Any Any) Any Any];
+   *   Tuple [bl; Any; Any; t re Any Any (t re Any Any Any)];
+   *   Any
+   * ] *)
+(* [Tuple [a; b; c]; Tuple [b;a;c]; Tuple [b; Any; b]] *)
+(* [Tuple [nil; Any];
+ *  Tuple [Any; nil];
+ *  Tuple [cons (Var "x") (Var "xs"); cons (Var "y") (Var "ys")]] *)
+  [some @@ Tuple [nil; Any];
+   some @@ Tuple [Any; nil];
+   some @@ Tuple [cons (Var "x") (Var "xs"); cons (Var "y") (Var "ys")];
+   Cons ("None", None)]
 
 let ctors, arities =
   let module T = Type in
@@ -49,7 +61,9 @@ let ctors, arities =
   let q0l = T.Ctor ([q0], "list") in
   let q0o = T.Ctor ([q0], "option") in
   let bool = T.Ctor ([], "bool") in
+  let colour = T.Ctor ([], "colour") in
   let abc = T.Ctor ([], "abc") in
+  let q0t = T.Ctor ([q0], "rbtree") in
   add "Nil" q0l;
   add "Cons" (T.Arrow (Prod [q0; q0l], q0l));
   add "None" q0o;
@@ -59,6 +73,10 @@ let ctors, arities =
   add "A" abc;
   add "B" abc;
   add "C" abc;
+  add "Red" colour;
+  add "Black" colour;
+  add "E" q0t;
+  add "T" (T.Arrow (Prod [colour; q0t; q0; q0t], q0t));
   ctors, arities
 
 let () =
