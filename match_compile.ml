@@ -92,21 +92,6 @@ type dt =
   | Leaf of int
   | Switch of Occ.t * (string * dt) list * dt option
 
-(* let show_dt =
- *   let open Printf in
- *   let rec go t : dt -> string = function
- *     | Fail -> t ^ "fail\n"
- *     | Leaf i -> t ^ sprintf "%d\n" i
- *     | Switch (o, cases, d) ->
- *        let cases = cases @ (match d with Some t -> [("default", t)] | _ -> []) in
- *        let cases =
- *          List.map (fun (tag, tree) -> Printf.sprintf "%s %s =>\n%s" t tag (go (t^"  ") tree)) cases
- *        in
- *        let cases = String.concat "" cases in
- *        let o = Occ.show o in
- *        t ^ sprintf "switch(%s) {\n%s%s}\n" o cases t 
- *   in go "" *)
-
 let collect_signature ps =
   let ctors = Hashset.create 10 in
   let go : Pat.Typed.t -> _ = function
