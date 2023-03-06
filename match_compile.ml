@@ -92,20 +92,20 @@ type dt =
   | Leaf of int
   | Switch of Occ.t * (string * dt) list * dt option
 
-let show_dt =
-  let open Printf in
-  let rec go t : dt -> string = function
-    | Fail -> t ^ "fail\n"
-    | Leaf i -> t ^ sprintf "%d\n" i
-    | Switch (o, cases, d) ->
-       let cases = cases @ (match d with Some t -> [("default", t)] | _ -> []) in
-       let cases =
-         List.map (fun (tag, tree) -> Printf.sprintf "%s %s =>\n%s" t tag (go (t^"  ") tree)) cases
-       in
-       let cases = String.concat "" cases in
-       let o = Occ.show o in
-       t ^ sprintf "switch(%s) {\n%s%s}\n" o cases t 
-  in go ""
+(* let show_dt =
+ *   let open Printf in
+ *   let rec go t : dt -> string = function
+ *     | Fail -> t ^ "fail\n"
+ *     | Leaf i -> t ^ sprintf "%d\n" i
+ *     | Switch (o, cases, d) ->
+ *        let cases = cases @ (match d with Some t -> [("default", t)] | _ -> []) in
+ *        let cases =
+ *          List.map (fun (tag, tree) -> Printf.sprintf "%s %s =>\n%s" t tag (go (t^"  ") tree)) cases
+ *        in
+ *        let cases = String.concat "" cases in
+ *        let o = Occ.show o in
+ *        t ^ sprintf "switch(%s) {\n%s%s}\n" o cases t 
+ *   in go "" *)
 
 let collect_signature ps =
   let ctors = Hashset.create 10 in
@@ -161,14 +161,31 @@ let type_name t =
   |> (function
       | Type.Ctor (_, n) -> n
       | _ -> failwith "Not a valid type!")
-  
+
+let show_dt : Decision_tree.t -> string =
+  let open Printf in
+  let rec go t : Decision_tree.t -> string = function
+    | { v = Fail; id } -> t ^ sprintf "fail [%d]\n" id
+    | { v = Leaf i; id } -> t ^ sprintf "%d [%d]\n" i id
+    | { v = Switch (o, cases, d); id } ->
+       let cases = cases @ (match d with Some t -> [("default", t)] | _ -> []) in
+       let cases =
+         List.map (fun (tag, tree) -> Printf.sprintf "%s %s =>\n%s" t tag (go (t^"  ") tree)) cases
+       in
+       let cases = String.concat "" cases in
+       let o = Occ.show o in
+       t ^ sprintf "switch(%s) [%d] {\n%s%s}\n" o id cases t 
+  in go ""
+
 let compile arities base ps =
+  let module DT = Decision_tree in
+  let module DTB = DT.Make() in
   let initial = preprocess base ps Fun.id in
-  let rec go (matrix : M.t) =
+  let rec go (matrix : M.t) : DT.t =
     if M.is_empty matrix then
-      Fail
+      DTB.get Fail
     else if vec_forall is_irrefutable (M.get_row matrix 0) then
-      Leaf (M.get_index matrix 0)
+      DTB.get (Leaf (M.get_index matrix 0))
     else
       begin
         let i = M.find_first_column matrix has_refutable in
@@ -188,8 +205,9 @@ let compile arities base ps =
           else
             None
         in
-        Switch (occ, cases, default)
+        DTB.get (Switch (occ, cases, default))
       end
   in
-  go initial |> show_dt |> print_endline
+  go initial |> Graphviz.print |> print_endline
+
   
