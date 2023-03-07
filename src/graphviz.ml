@@ -18,7 +18,6 @@ let print (dt : t) : string =
         | Switch (o, cs, d) ->
            let cs = cs @ Option.(value (map (fun v -> [("default", v)]) d) ~default:[]) in
            let children, arcs = List.(split (map (fun (tag, ({ id = id'; _ } as v)) -> v, (id, id', tag)) cs)) in
-           let arcs = List.map (fun (tag, { id = id'; _ }) -> (id, id', tag)) cs in
            Occ.show o, "egg", arcs, children
       in
       append (sprintf "%d [label=\"%s\", shape=\"%s\"];" id label shape);
