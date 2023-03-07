@@ -9,38 +9,18 @@ module Infer =
     end)
 
 let ps : Pat.Untyped.t list =
-  let nil : Pat.Untyped.t =
-    Cons ("Nil", None)
-  in
-  let cons x xs : Pat.Untyped.t =
-    Cons ("Cons", Some (Tuple [x; xs]))
-  in
-  let some x : Pat.Untyped.t =
-    Cons ("Some", Some x) 
-  in
-  let a : Pat.Untyped.t = Cons ("A", None) in
-  let b : Pat.Untyped.t = Cons ("B", None) in
-  let c : Pat.Untyped.t = Cons ("C", None) in
   let re : Pat.Untyped.t = Cons ("Red", None) in
   let bl : Pat.Untyped.t = Cons ("Black", None) in
   let t c l x r : Pat.Untyped.t =
     Cons ("T", Some(Tuple [c;l;x;r]))
   in
-  (* [
-   *   Tuple [bl; t re (t re Any Any Any) Any Any; Any; Any];
-   *   Tuple [bl; t re Any Any (t re Any Any Any); Any; Any];
-   *   Tuple [bl; Any; Any; t re (t re Any Any Any) Any Any];
-   *   Tuple [bl; Any; Any; t re Any Any (t re Any Any Any)];
-   *   Any
-   * ] *)
-(* [Tuple [a; b; c]; Tuple [b;a;c]; Tuple [b; Any; b]] *)
-(* [Tuple [nil; Any];
- *  Tuple [Any; nil];
- *  Tuple [cons (Var "x") (Var "xs"); cons (Var "y") (Var "ys")]] *)
-  [some @@ Tuple [nil; Any];
-   some @@ Tuple [Any; nil];
-   some @@ Tuple [cons (Var "x") (Var "xs"); cons (Var "y") (Var "ys")];
-   Cons ("None", None)]
+  [
+    Tuple [bl; t re (t re Any Any Any) Any Any; Any; Any];
+    Tuple [bl; t re Any Any (t re Any Any Any); Any; Any];
+    Tuple [bl; Any; Any; t re (t re Any Any Any) Any Any];
+    Tuple [bl; Any; Any; t re Any Any (t re Any Any Any)];
+    Any
+  ]
 
 let ctors, arities =
   let module T = Type in
