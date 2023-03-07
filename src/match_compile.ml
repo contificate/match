@@ -87,11 +87,6 @@ let vec_forall p v =
 let has_refutable =
   Fun.negate (vec_forall is_irrefutable)
 
-type dt = 
-  | Fail
-  | Leaf of int
-  | Switch of Occ.t * (string * dt) list * dt option
-
 let collect_signature ps =
   let ctors = Hashset.create 10 in
   let go : Pat.Typed.t -> _ = function
@@ -109,7 +104,7 @@ let unwrap st : Pat.Typed.t -> Pat.Typed.t = function
      p
   | { v = Cons (_, _); _ } ->
      M.default_entry
-  | p -> p (* should this ever get hit? *)
+  | p -> p
 
 let specialise (m : M.t) p =
   let patterns = ref [] in
@@ -147,21 +142,6 @@ let type_name t =
       | Type.Ctor (_, n) -> n
       | _ -> failwith "Not a valid type!")
 
-let show_dt : Decision_tree.t -> string =
-  let open Printf in
-  let rec go t : Decision_tree.t -> string = function
-    | { v = Fail; id } -> t ^ sprintf "fail [%d]\n" id
-    | { v = Leaf i; id } -> t ^ sprintf "%d [%d]\n" i id
-    | { v = Switch (o, cases, d); id } ->
-       let cases = cases @ (match d with Some t -> [("default", t)] | _ -> []) in
-       let cases =
-         List.map (fun (tag, tree) -> Printf.sprintf "%s %s =>\n%s" t tag (go (t^"  ") tree)) cases
-       in
-       let cases = String.concat "" cases in
-       let o = Occ.show o in
-       t ^ sprintf "switch(%s) [%d] {\n%s%s}\n" o id cases t 
-  in go ""
-
 let compile arities base ps =
   let module DT = Decision_tree in
   let module DTB = DT.Make() in
@@ -186,9 +166,7 @@ let compile arities base ps =
         let default =
           let tn = type_name occ.ty in
           if Hashset.cardinal signature < Hashtbl.find arities tn then
-            Some (go (specialise matrix any))
-          else
-            None
+            Some (go (specialise matrix any)) else None
         in
         DTB.get (Switch (occ, cases, default))
       end
