@@ -55,7 +55,7 @@ module Make(F: Fresh): S = struct
       | Arrow (l, r), Arrow (l', r') ->
          unify l l';
          unify r r'
-      | _ -> ()
+      | _ -> failwith "Unificatione error"
 
   let infer (ctx : ctx) =
     let rec go : Pat.Untyped.t -> Pat.Typed.t = function
