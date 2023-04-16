@@ -25,5 +25,5 @@ let print (dt : t) : string =
       List.iter (fun c -> Queue.push c q) children;
       Hashset.add visited id
   done;
-  sprintf "digraph dt {\n%s\n}" (String.concat "\n" List.(rev !lines))
+  sprintf "digraph dt {\nrankdir=LR;\n %s\n}" (String.concat "\n" List.(rev !lines))
   
