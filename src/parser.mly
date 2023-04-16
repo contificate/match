@@ -2,8 +2,8 @@
 
 %token<string> IDENT
 %token<string> TVAR
-%token LPAR RPAR COMMA EQUAL BAR MINUSGREATER STAR
-%token TYP AND OF
+%token LPAR RPAR COMMA EQUAL BAR MINUSGREATER STAR UNDERSCORE
+%token TYP AND OF MATCH WITH
 %token EOF
 
 %right MINUSGREATER
@@ -14,13 +14,15 @@
 %type<Syntax.Type.constr> constr1_decl
 %type<Syntax.Type.decl> typ1_def
 
-%start<Syntax.Type.defs> program
+%type<Pat.Untyped.t> pattern
+
+%start<Syntax.Type.defs * string * Pat.Untyped.t list> program
 
 %%
 
 program: i = impl EOF { i }
 
-impl: TYP d = typ_decl { d }
+impl: TYP d = typ_decl MATCH x = IDENT WITH BAR ps = separated_list(BAR, pattern) { (d, x, ps) }
 
 typ_decl:
   | f = typ1_decl AND s = typ_decl { f :: s }
@@ -59,3 +61,15 @@ typ_star_list:
   | ts = typ_star_list STAR t = simple_typ { t :: ts }
   | l = simple_typ STAR r = simple_typ { [r; l] }
 
+pattern:
+  | UNDERSCORE { Any }
+  | x = IDENT
+    {
+      let fst = String.get x 0 in
+      if Char.uppercase_ascii fst = fst then
+	Cons (x, None)
+      else
+	Var x
+      }
+  | c = IDENT p = pattern { Cons (c, Some p) }
+  | LPAR ps = separated_nonempty_list(COMMA, pattern) RPAR { Tuple ps }

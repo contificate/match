@@ -7,9 +7,12 @@ rule tokenise = parse
 | "type" { TYP }
 | "and" { AND }
 | "of" { OF }
+| "match" { MATCH }
+| "with" { WITH }
 | ',' { COMMA }
 | '=' { EQUAL }
 | '|' { BAR }
+| '_' { UNDERSCORE }
 | "->" { MINUSGREATER }
 | '*' { STAR }
 | '(' { LPAR }

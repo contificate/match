@@ -18,3 +18,10 @@ end
 
 module Untyped = Spec(Identity)
 module Typed = Spec(Type.Typed)
+
+let rec show : Untyped.t -> string = function
+  | Any -> "_"
+  | Var x -> "v" ^ x
+  | Tuple ps -> Printf.sprintf "t(%s)" String.(concat "," List.(map show ps))
+  | Cons (c, None) -> c
+  | Cons (c, Some p) -> Printf.sprintf "%s (%s)" c (show p)
