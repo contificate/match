@@ -20,7 +20,7 @@ match v with
 | Some (Cons (x, xs), Cons (y, xs)) -> 2
 | None -> 3
 ```
-![first decision tree](meta/1.png)
+![first decision dag](meta/1.png)
 
 ```ocaml
 match v with
@@ -29,7 +29,7 @@ match v with
 | (_, _, False)-> 2
 | (_, _, True) -> 3
 ```
-![asasf](meta/2.png)
+![second decision dag](meta/2.png)
 
 ```ocaml
 match v with
@@ -39,4 +39,8 @@ match v with
 | (Black, a, x, T (Red, b, y, T (Red, c, z, d))) -> 3
 | _ -> 4
 ```
-![asasf](meta/3.png)
+![third decision dag](meta/3.png)
+
+---
+
+![user interface tool](meta/ui.gif)
