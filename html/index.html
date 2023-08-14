@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <title>Match Compiler</title>
+    <script src="../src/_build/default/main.bc.runtime.js"></script>
+    <script src="../src/_build/default/main.bc.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/3.1.2/svg.min.js" integrity="sha512-I+rKw3hArzZIHzrkdELbKqrXfkSvw/h0lW/GgB8FThaBVz2e5ZUlSW8kY8v3q6wq37eybIwyufkEZxe4qSlGcg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.pan-zoom.js/2.3.0/svg.pan-zoom.js" integrity="sha512-wjhvNZjqmm94Z6STaCs5ONZHZBo4yvy39dH+5MdV4hHL8UmBc/WQDFKcyLzZeK/eyP4MQ+0/Goak/2Ciyh/OeA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://bumbu.me/svg-pan-zoom/dist/svg-pan-zoom.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/viz.js/2.1.2/viz.js" integrity="sha512-vnRdmX8ZxbU+IhA2gLhZqXkX1neJISG10xy0iP0WauuClu3AIMknxyDjYHEpEhi8fTZPyOCWgqUCnEafDB/jVQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/viz.js/2.1.2/full.render.js" integrity="sha512-1zKK2bG3QY2JaUPpfHZDUMe3dwBwFdCDwXQ01GrKSd+/l0hqPbF+aak66zYPUZtn+o2JYi1mjXAqy5mW04v3iA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.17.0/ace.min.js" integrity="sha512-eKffe+qLxg7M+JTJB2v6VlcpQxKqRKP+A7yE3mYrYs6CA7RK8qSPH0xi06GElwY1NSX+iFDOhfK75O7cSqxRog==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.17.0/mode-ocaml.min.js" integrity="sha512-HWDELjFBpALNNQxPC4Alpeh3rOYXYb2WA0mzA1Dp3Zy++B7XFSMP9ek7HuzSW9gZK0n5mHFLeOWF+ETgr1k+tw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.17.0/theme-chrome.min.js" integrity="sha512-IoW2AJDFMQYyoy2/RXHXuejhOyYdER5cWEa5daKogz7AS2xou/WCCpghsgBDZG3/V4VCDuJw2RvVhUW81bhlDQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.17.0/ace.js" integrity="sha512-9s5Dypi7q0mJgoOQBbEl5Ze8kdh5RUo9EinAksVejk6drBle2xnntukFnW2jOorvuXSMKiUGSffp8guavVtxLA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+      * {
+	  margin: 0;
+	  padding: 0;
+	  box-sizing: border-box;
+      }
+
+      #wrapper {
+	  width: 60%;
+	  min-width: 700px;
+	  max-width: 1200px;
+	  margin: 1em auto;
+      }
+
+      #wrapper {
+	  padding: 1em;
+	  width: 100%;
+      }
+
+      header {
+	  border-bottom: 1px solid #000;
+      }
+
+      header h1 {
+	  text-align: center;
+	  padding: 1em;
+      }
+
+      #pane {
+	  padding: 1em 0;
+      }
+
+      #editor {
+	  width: 100%;
+	  min-height: 300px;
+	  padding: 1em;
+	  font-size: 1em;
+	  resize: vertical;
+      }
+
+      #output {
+	  width: 100%;
+	  overflow: none;
+      }
+
+      #output > svg { border: 1px solid #000; width: 100%; min-height: 300px; }
+
+      .bar {
+	  padding: 1em 0;
+      }
+
+      button {
+	  padding: 0.5em 1em;
+      }
+      
+    </style>
+  </head>
+  <body>
+    <div id="wrapper">
+      <header>
+	<h1>Match Compiler</h1>
+      </header>
+      <div class="bar">
+	Example: 
+	<select name="example" onChange="select(this)">
+	  <option value="0">Red-Black Tree</option>
+	  <option value="1">Zip</option>
+	  <option value="2">Booleans</option>
+	</select>
+      </div> 
+      <div id="pane" class="one">
+	<div id="editor">
+	</div>
+	<div class="bar">
+	  <button onClick="go()">Compile</button>
+	</div> 
+      </div>
+
+      <div id="output">
+	
+      </div>
+      
+    </div>
+  </body>
+</html>
+
+<script>
+
+  let editor = ace.edit("editor");
+  editor.setTheme("ace/theme/chrome");
+  editor.session.setMode("ace/mode/ocaml");
+
+  function go() {
+      let code = match.compile(editor.getValue());
+      let viz = new Viz();
+      viz.renderSVGElement(code).then(function(svg) {
+	  console.log(svg);
+	  document.getElementById("output").innerHTML = '';
+	  document.getElementById("output").appendChild(svg);
+	  svgPanZoom(svg);
+      }).catch(e => alert("dot: " + e));
+  }
+
+  let examples = [];
+  examples[0] = 'type \'a rbtree = \n' +
+    '  | E \n' +
+    '  | T of colour * \'a rbtree * \'a * \'a rbtree\n' +
+    'and colour = \n' +
+    '  | Red \n' +
+    '  | Black\n' +
+    '\n' +
+    'match v with\n' +
+    '| (Black, T (Red, T (Red, a, x, b), y, c), z, d)\n' +
+    '| (Black, T (Red, a, x, T (Red, b, y, c)), z, d)\n' +
+    '| (Black, a, x, T (Red, T (Red, b, y, c), z, d))\n' +
+    '| (Black, a, x, T (Red, b, y, T (Red, c, z, d)))\n' +
+    '| _\n' +
+    '\n';
+  examples[1] = 'type \'a list =\n' +
+    '  | Nil\n' +
+    '  | Cons of \'a * \'a list\n' +
+    '\n' +
+    'match e with\n' +
+    '| (Nil, _)\n' +
+    '| (_, Nil)\n' +
+    '| (Cons _, Cons _)\n' +
+    '\n';
+  examples[2] = 'type bool =\n' +
+    '  | True\n' +
+    '  | False\n' +
+    '  \n' +
+    'match v with\n' +
+    '| (_, False, True)\n' +
+    '| (False, True, _)\n' +
+    '| (_, _, False)\n' +
+    '| (_, _, True)\n' +
+    '\n';
+  
+  function select(option) {
+      let code = examples[option.value];
+      editor.setValue(code, -1);
+      editor.setValue(code, 1);
+  }
+
+  select({ value: 0 });
+  
+</script>
