@@ -1,5 +1,5 @@
 
-open Type
+open Js_of_ocaml
 
 module Infer =
   Inference.Make(struct
@@ -24,7 +24,7 @@ match v with
 | _
 |}
 
-let () =
+let _default () =
   let (defs, occ, ps) = Parser.program Lexer.tokenise (Lexing.from_string env) in
   let (ctors, arities) = Syntax.Type.reify_defs defs in
   let ctx : Infer.ctx = { ctors } in
@@ -32,3 +32,16 @@ let () =
   print_endline (Type.show ty);
   Match_compile.compile arities { v = Base occ; ty } ps'
 
+let () =
+  Js.export "match"
+    (object%js
+       method compile input =
+         let src = Js.to_string input in
+         let (defs, occ, ps) = Parser.program Lexer.tokenise (Lexing.from_string src) in
+         let (ctors, arities) = Syntax.Type.reify_defs defs in
+         let ctx : Infer.ctx = { ctors } in
+         let ty, ps' = Infer.infer_pats ctx ps in
+         let occ = Occ.{ v = Base occ; ty } in
+         let dot = Match_compile.compile arities occ ps' in
+         Js.string dot
+     end)

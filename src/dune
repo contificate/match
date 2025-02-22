@@ -1,6 +1,8 @@
 (executable
   (name main)
-  (libraries vector hashset))
+  (modes js exe)
+  (libraries vector hashset js_of_ocaml)
+  (preprocess (pps js_of_ocaml-ppx)))
 
 (menhir
   (modules parser))

@@ -171,6 +171,6 @@ let compile arities base ps =
         DTB.get (Switch (occ, cases, default))
       end
   in
-  go initial |> Graphviz.print |> print_endline
+  go initial |> Graphviz.print
 
   
