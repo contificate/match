@@ -43,4 +43,9 @@ match v with
 
 ---
 
+There is a small web user interface for experimenting with the algorithm.
+It provides nothing in the way of highlighting input errors, as it was intended to be 
+used for a YouTube video about the algorithm.
+You can find the tool hosted at my website [here](https://compiler.club/match).
+
 ![user interface tool](meta/ui.gif)
